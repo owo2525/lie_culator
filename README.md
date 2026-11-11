@@ -4,8 +4,6 @@
 
 `lie_culator` は、C++ と Win32 API を使用して開発したWindows向け電卓アプリです。
 
-Nintendoのゲームをイメージした、親しみやすいデザインを目指しています。
-
 <img src="resources/image/lie_culator.png" width="300" height="500">
 
 ## Overview
