@@ -6,6 +6,8 @@
 
 Nintendoのゲームをイメージした、親しみやすいデザインを目指しています。
 
+<img src="resources/image/lie_culator.png" width="300" height="500">
+
 ## Overview
 
 - Windows向けデスクトップアプリ
