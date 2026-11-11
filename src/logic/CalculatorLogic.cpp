@@ -107,13 +107,11 @@ namespace {
                 throw std::runtime_error("Invalid number");
             }
 
-            // 単項プラス
             if (expression[position] == L'+') {
                 position++;
                 return parseFactor();
             }
 
-            // 単項マイナス
             if (expression[position] == L'-') {
                 position++;
                 return -parseFactor();
@@ -157,53 +155,84 @@ namespace {
             return std::stod(number);
         }
     };
+
+    // 現在入力中の数値の開始位置を取得
+    size_t getCurrentNumberStart(
+        const std::wstring& expression
+    ) {
+        size_t position =
+            expression.find_last_of(L"+-*/×÷");
+
+        if (position == std::wstring::npos) {
+            return 0;
+        }
+
+        return position + 1;
+    }
 }
 
 // 数字入力
 void CalculatorLogic::inputNumber(int number) {
+
+    if (number < 0 || number > 9) {
+        return;
+    }
+
     if (hasError || afterResult) {
         clear();
     }
 
-    if (currentOperandStarted) {
-        expression += std::to_wstring(number);
-    } else {
-        if (expression == L"0") {
-            expression = std::to_wstring(number);
+    size_t start =
+        getCurrentNumberStart(expression);
+
+    std::wstring currentNumber =
+        expression.substr(start);
+
+    // 入力開始時、または現在の数値が0の場合
+    if (!currentOperandStarted || currentNumber == L"0") {
+
+        // 小数点入力後は0を置き換えない
+        if (
+            currentNumber == L"0" &&
+            currentNumber.find(L'.') == std::wstring::npos
+        ) {
+            expression.replace(
+                start,
+                std::wstring::npos,
+                std::to_wstring(number)
+            );
         } else {
             expression += std::to_wstring(number);
         }
 
         currentOperandStarted = true;
+        return;
     }
+
+    expression += std::to_wstring(number);
 }
 
 // 小数点入力
 void CalculatorLogic::inputDecimal() {
+
     if (hasError || afterResult) {
         clear();
     }
 
-    // 現在の入力部分を取得
-    size_t start = expression.find_last_of(L"+-*/×÷");
-
-    if (start == std::wstring::npos) {
-        start = 0;
-    } else {
-        start++;
-    }
+    size_t start =
+        getCurrentNumberStart(expression);
 
     std::wstring currentNumber =
         expression.substr(start);
 
-    // すでに小数点がある場合は何もしない
     if (currentNumber.find(L'.') != std::wstring::npos) {
         return;
     }
 
     if (!currentOperandStarted) {
-        if (expression == L"0") {
-            expression = L"0.";
+
+        if (currentNumber.empty()) {
+            expression += L"0.";
         } else {
             expression += L"0.";
         }
@@ -217,6 +246,7 @@ void CalculatorLogic::inputDecimal() {
 
 // 演算子入力
 void CalculatorLogic::setOperator(char op) {
+
     if (hasError) {
         return;
     }
@@ -260,7 +290,7 @@ void CalculatorLogic::setOperator(char op) {
     if (isOperator(last)) {
         expression.back() = operation;
     } else {
-        // 小数点だけで終わっている場合
+
         if (last == L'.') {
             expression += L'0';
         }
@@ -273,6 +303,7 @@ void CalculatorLogic::setOperator(char op) {
 
 // 計算実行
 void CalculatorLogic::calculate() {
+
     if (hasError || afterResult) {
         return;
     }
@@ -286,7 +317,7 @@ void CalculatorLogic::calculate() {
     }
 
     try {
-        // 正しい計算結果
+
         double correctValue = evaluateExpression();
 
         if (!std::isfinite(correctValue)) {
@@ -294,10 +325,8 @@ void CalculatorLogic::calculate() {
             return;
         }
 
-        // 嘘の結果を生成
         double lieValue = generateLie(correctValue);
 
-        // 結果表示
         resultDisplay = formatNumber(lieValue);
 
         afterResult = true;
@@ -310,6 +339,7 @@ void CalculatorLogic::calculate() {
 
 // 正しい計算結果を取得
 double CalculatorLogic::evaluateExpression() const {
+
     ExpressionParser parser(expression);
 
     return parser.parse();
@@ -317,6 +347,7 @@ double CalculatorLogic::evaluateExpression() const {
 
 // 嘘の数値を生成
 double CalculatorLogic::generateLie(double correctValue) {
+
     std::mt19937& engine = getRandomEngine();
 
     std::uniform_int_distribution<int> patternDist(0, 4);
@@ -335,31 +366,28 @@ double CalculatorLogic::generateLie(double correctValue) {
         formatNumber(correctValue);
 
     for (int attempt = 0; attempt < 100; ++attempt) {
+
         double lieValue = correctValue;
 
         switch (patternDist(engine)) {
+
         case 0:
-            // 完全ランダム
             lieValue = randomDist(engine);
             break;
 
         case 1:
-            // 符号反転
             lieValue = -correctValue;
             break;
 
         case 2:
-            // ランダム加算
             lieValue = correctValue + randomDist(engine);
             break;
 
         case 3:
-            // 倍率変更
             lieValue = correctValue * multiplierDist(engine);
             break;
 
         case 4:
-            // ランダム置換
             lieValue = randomDist(engine);
             break;
         }
@@ -373,7 +401,6 @@ double CalculatorLogic::generateLie(double correctValue) {
         }
     }
 
-    // 最終フォールバック
     if (correctValue == 0.0) {
         return 1.0;
     }
@@ -383,6 +410,7 @@ double CalculatorLogic::generateLie(double correctValue) {
 
 // 数値を文字列に変換
 std::wstring CalculatorLogic::formatNumber(double value) {
+
     if (value == 0.0) {
         value = 0.0;
     }
@@ -396,6 +424,7 @@ std::wstring CalculatorLogic::formatNumber(double value) {
 
 // 演算子判定
 bool CalculatorLogic::isOperator(wchar_t value) const {
+
     return (
         value == L'+' ||
         value == L'-' ||
@@ -408,6 +437,7 @@ bool CalculatorLogic::isOperator(wchar_t value) const {
 
 // 全消去
 void CalculatorLogic::clear() {
+
     expression = L"0";
     resultDisplay.clear();
 
@@ -418,6 +448,7 @@ void CalculatorLogic::clear() {
 
 // エラー処理
 void CalculatorLogic::setError() {
+
     resultDisplay = L"Error";
 
     afterResult = true;
@@ -427,6 +458,7 @@ void CalculatorLogic::setError() {
 
 // 計算式取得
 std::wstring CalculatorLogic::getExpressionDisplayValue() const {
+
     if (afterResult && resultDisplay != L"Error") {
         return expression + L" =";
     }
@@ -436,11 +468,13 @@ std::wstring CalculatorLogic::getExpressionDisplayValue() const {
 
 // 計算結果取得
 std::wstring CalculatorLogic::getResultDisplayValue() const {
+
     return resultDisplay;
 }
 
 // 既存コードとの互換用
 std::wstring CalculatorLogic::getDisplayValue() const {
+
     if (!resultDisplay.empty()) {
         return resultDisplay;
     }

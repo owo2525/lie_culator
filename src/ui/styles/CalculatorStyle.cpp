@@ -3,73 +3,109 @@
 
 namespace {
 
-    // カラー定義
-    constexpr COLORREF CALCULATOR_BACKGROUND =
-        RGB(247, 243, 234);
+    // ==================================================
+    // Accenture Color
+    // ==================================================
 
-    constexpr COLORREF CALCULATOR_DISPLAY =
-        RGB(37, 43, 54);
+    // メインカラー
+    constexpr COLORREF ACCENT_PURPLE =
+        RGB(161, 0, 255);       // #A100FF
 
-    constexpr COLORREF CALCULATOR_NUMBER =
+    // ディープパープル
+    constexpr COLORREF DEEP_PURPLE =
+        RGB(117, 0, 192);       // #7500C0
+
+    // ダークパープル
+    constexpr COLORREF DARK_PURPLE =
+        RGB(70, 0, 115);        // #460073
+
+    // 背景色
+    constexpr COLORREF BACKGROUND_COLOR =
+        RGB(245, 242, 248);     // #F5F2F8
+
+    // ディスプレイ背景色
+    constexpr COLORREF DISPLAY_COLOR =
+        RGB(35, 20, 48);
+
+    // 白
+    constexpr COLORREF WHITE =
         RGB(255, 255, 255);
 
-    constexpr COLORREF CALCULATOR_OPERATOR =
-        RGB(90, 160, 210);
+    // 通常文字色
+    constexpr COLORREF TEXT_COLOR =
+        RGB(70, 0, 115);
 
-    constexpr COLORREF CALCULATOR_CLEAR =
-        RGB(100, 180, 130);
+    // ==================================================
+    // Button ID
+    // ==================================================
 
-    constexpr COLORREF CALCULATOR_EQUAL =
-        RGB(150, 120, 200);
-
-    constexpr COLORREF CALCULATOR_TEXT =
-        RGB(45, 45, 55);
-
-    constexpr COLORREF CALCULATOR_WHITE =
-        RGB(255, 255, 255);
-
-    // ボタンID
     constexpr int BUTTON_ID_ADD = 300;
     constexpr int BUTTON_ID_SUBTRACT = 301;
     constexpr int BUTTON_ID_MULTIPLY = 302;
     constexpr int BUTTON_ID_DIVIDE = 303;
+
     constexpr int BUTTON_ID_CLEAR = 400;
     constexpr int BUTTON_ID_EQUAL = 500;
 
-    // ボタン色を取得
+    // ==================================================
+    // Button Color
+    // ==================================================
+
     COLORREF getButtonColor(int id) {
 
+        // ACボタン
         if (id == BUTTON_ID_CLEAR) {
-            return CALCULATOR_CLEAR;
+            return DARK_PURPLE;
         }
 
+        // イコールボタン
         if (id == BUTTON_ID_EQUAL) {
-            return CALCULATOR_EQUAL;
+            return DEEP_PURPLE;
         }
 
+        // 演算子ボタン
         if (
             id == BUTTON_ID_ADD ||
             id == BUTTON_ID_SUBTRACT ||
             id == BUTTON_ID_MULTIPLY ||
             id == BUTTON_ID_DIVIDE
         ) {
-            return CALCULATOR_OPERATOR;
+            return ACCENT_PURPLE;
         }
 
-        return CALCULATOR_NUMBER;
+        // 数字ボタン
+        return WHITE;
     }
 
 }
 
+// ==================================================
+// Color Getter
+// ==================================================
+
 // 背景色
 COLORREF CalculatorStyle::getBackgroundColor() {
-    return CALCULATOR_BACKGROUND;
+    return BACKGROUND_COLOR;
 }
 
 // ディスプレイ背景色
 COLORREF CalculatorStyle::getDisplayColor() {
-    return CALCULATOR_DISPLAY;
+    return DISPLAY_COLOR;
 }
+
+// 通常文字色
+COLORREF CalculatorStyle::getTextColor() {
+    return ACCENT_PURPLE;
+}
+
+// タイトル文字色
+COLORREF CalculatorStyle::getTitleColor() {
+    return ACCENT_PURPLE;
+}
+
+// ==================================================
+// Font
+// ==================================================
 
 // タイトルフォント
 HFONT CalculatorStyle::createTitleFont() {
@@ -159,7 +195,10 @@ HFONT CalculatorStyle::createButtonFont() {
 
 }
 
-// ボタン描画
+// ==================================================
+// Button Drawing
+// ==================================================
+
 void CalculatorStyle::drawButton(
     DRAWITEMSTRUCT* drawItem,
     HFONT buttonFont
@@ -178,22 +217,27 @@ void CalculatorStyle::drawButton(
     );
 
     // ボタン色
-    COLORREF buttonColor = getButtonColor(buttonId);
+    COLORREF buttonColor =
+        getButtonColor(buttonId);
 
     // 押下状態
     bool isPressed =
         (drawItem->itemState & ODS_SELECTED) != 0;
 
     if (isPressed) {
+
         buttonColor = RGB(
             GetRValue(buttonColor) * 80 / 100,
             GetGValue(buttonColor) * 80 / 100,
             GetBValue(buttonColor) * 80 / 100
         );
+
     }
 
     // 背景ブラシ
-    HBRUSH brush = CreateSolidBrush(buttonColor);
+    HBRUSH brush = CreateSolidBrush(
+        buttonColor
+    );
 
     // 枠線
     HPEN pen = CreatePen(
@@ -202,8 +246,15 @@ void CalculatorStyle::drawButton(
         buttonColor
     );
 
-    HGDIOBJ oldBrush = SelectObject(hdc, brush);
-    HGDIOBJ oldPen = SelectObject(hdc, pen);
+    HGDIOBJ oldBrush = SelectObject(
+        hdc,
+        brush
+    );
+
+    HGDIOBJ oldPen = SelectObject(
+        hdc,
+        pen
+    );
 
     // ボタン背景
     RoundRect(
@@ -220,7 +271,12 @@ void CalculatorStyle::drawButton(
     HGDIOBJ oldFont = nullptr;
 
     if (buttonFont != nullptr) {
-        oldFont = SelectObject(hdc, buttonFont);
+
+        oldFont = SelectObject(
+            hdc,
+            buttonFont
+        );
+
     }
 
     // テキスト色
@@ -228,12 +284,27 @@ void CalculatorStyle::drawButton(
         buttonId >= 200 &&
         buttonId <= 209
     ) {
-        SetTextColor(hdc, CALCULATOR_TEXT);
+
+        // 数字ボタンはダークパープル
+        SetTextColor(
+            hdc,
+            TEXT_COLOR
+        );
+
     } else {
-        SetTextColor(hdc, CALCULATOR_WHITE);
+
+        // 演算子・AC・イコールは白
+        SetTextColor(
+            hdc,
+            WHITE
+        );
+
     }
 
-    SetBkMode(hdc, TRANSPARENT);
+    SetBkMode(
+        hdc,
+        TRANSPARENT
+    );
 
     // ボタン文字列
     wchar_t text[32] = {};
@@ -257,6 +328,7 @@ void CalculatorStyle::drawButton(
 
     // フォーカス枠
     if (drawItem->itemState & ODS_FOCUS) {
+
         RECT focusRect = rect;
 
         InflateRect(
@@ -269,16 +341,30 @@ void CalculatorStyle::drawButton(
             hdc,
             &focusRect
         );
+
     }
 
     // リソース復元
     if (oldFont != nullptr) {
-        SelectObject(hdc, oldFont);
+
+        SelectObject(
+            hdc,
+            oldFont
+        );
+
     }
 
-    SelectObject(hdc, oldBrush);
-    SelectObject(hdc, oldPen);
+    SelectObject(
+        hdc,
+        oldBrush
+    );
 
+    SelectObject(
+        hdc,
+        oldPen
+    );
+
+    // リソース解放
     DeleteObject(brush);
     DeleteObject(pen);
 }

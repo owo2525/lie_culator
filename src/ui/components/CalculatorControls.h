@@ -7,7 +7,6 @@ class CalculatorControls {
 
 public:
 
-    // コントロール生成
     static void createControls(
         HWND parent,
         HFONT titleFont,

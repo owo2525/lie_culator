@@ -13,6 +13,12 @@ public:
     // ディスプレイ背景色
     static COLORREF getDisplayColor();
 
+    // 文字色
+    static COLORREF getTextColor();
+
+    // タイトル文字色
+    static COLORREF getTitleColor();
+
     // フォント生成
     static HFONT createTitleFont();
     static HFONT createSubtitleFont();
