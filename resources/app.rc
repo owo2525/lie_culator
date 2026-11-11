@@ -1,0 +1,3 @@
+#include "../src/resource.h"
+
+IDI_APP_ICON ICON "../src/assets/owo_app_icon.ico"
